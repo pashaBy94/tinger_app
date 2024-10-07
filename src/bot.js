@@ -45,15 +45,15 @@ class HtmlTelegramBot extends TelegramBot {
   }
 
   async sendHTML(html, options = {}) {
-    let cssPath = "/../resources/html/main.css";
+    let cssPath = "./../resources/html/main.css";
     if (options && options.theme === "dark")
-      cssPath = "/../resources/html/dark-theme.css";
+      cssPath = "./../resources/html/dark-theme.css";
     if (options && options.theme === "light")
-      cssPath = "/../resources/html/light-theme.css";
+      cssPath = "./../resources/html/light-theme.css";
 
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.goto(__dirname + "/../resources/html/main.html");
+    await page.goto(__dirname + "./../resources/html/main.html");
     await page.setContent(html);
     await page.addStyleTag({ path: __dirname + cssPath });
 
@@ -63,12 +63,12 @@ class HtmlTelegramBot extends TelegramBot {
     await bodyHandle.dispose();
 
     await page.setViewport({ width: 420, height: Math.ceil(height) });
-    await page.screenshot({ path: "../resources/screenshot.png" });
+    await page.screenshot({ path: "./resources/screenshot.png" });
     await browser.close();
 
     return await super.sendPhoto(
       this.singleChatId,
-      fs.createReadStream(`../resources/screenshot.png`),
+      fs.createReadStream(`./resources/screenshot.png`),
       { contentType: "image/png" }
     );
   }

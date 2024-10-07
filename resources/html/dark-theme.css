@@ -1,5 +1,5 @@
 /* dark-theme.css */
-
+@import "main.css";
 /* Основной стиль для темной темы */
 body {
     background-color: #1e1e1e; /* Темный фон */

@@ -5,7 +5,7 @@ body {
     font-size: 14px;
     line-height: 1.5;
     color: #000;
-    background-color: aqua;
+    background-color: rgb(255, 255, 255);
 }
 
 /* Дополнительные стили для заголовков */
@@ -31,4 +31,19 @@ img {
     height: auto;
     display: block;
     margin: 0 auto; /* Для центрирования изображений */
+}
+
+.wrap__me{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.text__me{
+    font-weight: bolder;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 40px;
+    background: linear-gradient(to left, rgb(105, 105, 255), rgb(119, 253, 235), rgb(128, 255, 128) );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
 }
