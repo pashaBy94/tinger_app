@@ -59,6 +59,7 @@ async gptDialog(){
 }
 const chatGpt = new ChatGptService("gpt:fXtFfefcMJW5gbKvJxHPJFkblB3TaymEaIPsJ1W67t7kdwMM");
 console.log(2);
+chatGpt.addMessage('Hello')
 
 chatGpt.addMessage('Hello. Nice to meet you.')
 const bot = new MyTelegramBot("8102407768:AAGMV8eLtDx47DclJ74KFBYdwOHnw8xPxiY");
