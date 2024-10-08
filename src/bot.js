@@ -23,7 +23,6 @@ class HtmlTelegramBot extends TelegramBot {
       this.singleChatId = msg.chat.id != null ? msg.chat.id : this.singleChatId;
       const text = msg.text;
       if (text == null || text.startsWith("/")) return;
-      console.log(callback);
 
       await callback.call(this, msg);
     });
