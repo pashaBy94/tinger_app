@@ -1,5 +1,6 @@
 const { HtmlTelegramBot, userInfoToString } = require("./bot");
 const ChatGptService = require("./gpt");
+const { generateSequence } = require("./lib");
 const { theme } = require("./values");
 
 class MyTelegramBot extends HtmlTelegramBot {
@@ -7,6 +8,29 @@ class MyTelegramBot extends HtmlTelegramBot {
     super(token);
     this.mode = null;
     this.listMessages = [];
+    this.generator = null;
+    this.user = {};
+    this.openerUser = {};
+    this.questions = {
+      name: "Как ваше имя?",
+      sex: "Ваш пол?",
+      age: "Ваш возвраст?",
+      city: "В каком городе вы живете?",
+      occupation: "Какая ваша профессия?",
+      hobby: "Чем вы увлекаетесь?",
+      goals: "Ваши цели знакомства?",
+      wealth: "Какой ваш доход?",
+      annoys: "Что вас раздражает в людях?",
+    }
+    this.questionsOpener = {
+      sex: "Пол?",
+      age: "Возвраст?",
+      occupation: "Какая профессия?",
+      hobby: "Чем увлекается?",
+      goals: "Цели знакомства?",
+      handsome: "Уровень привлекательности по десятибальной шкале.",
+      annoys: "Что раздражает в людях?",
+    }
   }
   async hendler_commands(query) {
     switch (query.text) {
@@ -41,8 +65,48 @@ class MyTelegramBot extends HtmlTelegramBot {
         this.mode = "message";
         await this.messageInitial();
         break;
-      default:
+      case "/profile":
+        await this.profileInitial();
         break;
+      case "/opener":
+        await this.openerInitial();
+        break;
+    }
+  }
+  async openerInitial(){
+    const dateText = this.loadMessage("opener");
+    await this.sendImage("opener");
+    await this.sendTextButtons(dateText, {
+      isOpener: "Да",
+      isNotOpener: "Нет"
+    });
+  }
+  async openerDialog(msg) {
+    const text = msg.text;    
+    if(this.generator.next(text).done){
+      this.mode = this.generator = null;
+      const promptProfile = this.loadPrompt('opener');
+      const request = userInfoToString(this.user);      
+      const result = await chatGpt.sendQuestion(promptProfile, request);
+      await this.sendText(result + "🤖");
+    }
+  }
+  async profileInitial(){
+    const dateText = this.loadMessage("profile");
+    await this.sendImage("profile");
+    await this.sendTextButtons(dateText, {
+      isProfile: "Да",
+      isNotProfile: "Нет"
+    });
+  }
+  async profileDialog(msg) {
+    const text = msg.text;    
+    if(this.generator.next(text).done){
+      this.mode = this.generator = null;
+      const promptProfile = this.loadPrompt('profile');
+      const request = userInfoToString(this.user);      
+      const result = await chatGpt.sendQuestion(promptProfile, request);
+      await this.sendText(result + "🤖");
     }
   }
   async gptInitial() {
@@ -78,13 +142,13 @@ class MyTelegramBot extends HtmlTelegramBot {
   async dateDialog(msg) {
     let loader = "...";
     const text = msg.text;
-    const self = this;
+    // const self = this;
     const message = await this.sendText(loader);
-    const timer = setInterval(() => {
-      if (message) self.editText(message, (loader += "."));
-    }, 1000);
+    // const timer = setInterval(() => {
+    //   if (message) self.editText(message, (loader += "."));
+    // }, 1000);
     const answer = await chatGpt.addMessage(text);
-    clearInterval(timer);
+    // clearInterval(timer);
     await this.editText(message, answer);
   }
   async messageDialog(msg) {
@@ -103,12 +167,17 @@ class MyTelegramBot extends HtmlTelegramBot {
       case "message":
         await this.messageDialog(msg);
         break;
-      default:
+      case "profile":
+        await this.profileDialog(msg);
+        break;
+      case "opener":
+        await this.openerDialog(msg);
         break;
     }
   }
   async handler_themes_button(query) {
     const text = query.data;
+    
     switch (true) {
       case theme.theme_light === text:
         await this.sendText(`You are using light theme.`);
@@ -129,8 +198,26 @@ class MyTelegramBot extends HtmlTelegramBot {
         this.listMessages.push(answer);
         await this.sendText(answer);
         break;
-      default:
-        break;
+      case text === 'isProfile':
+        this.mode = "profile";
+        this.generator = generateSequence(this.questions, 
+          async (text)=>{ await this.sendText(text) }, 
+          (user)=>{ this.user = user })
+        this.generator.next()
+        break
+      case text === 'isNotProfile':
+        this.sendText('OK')
+        break
+      case text === 'isOpener':
+        this.mode = "opener";
+        this.generator = generateSequence(this.questionsOpener, 
+          async (text)=>{ await this.sendText(text) }, 
+          (user)=>{ this.openerUser = user })
+        this.generator.next()
+        break
+      case text === 'isNotOpener':
+        this.sendText('OK')
+        break
     }
   }
 }
